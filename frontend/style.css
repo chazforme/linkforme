@@ -194,35 +194,38 @@ input, select, textarea, button {
 
 /* ========== 링크 그리드 ========== */
 .link-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 14px 20px 80px;
 }
 
-@media (min-width: 640px) {
-  .link-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-}
-@media (min-width: 1024px) {
-  .link-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 18px 32px 80px; }
+@media (min-width: 768px) {
+  .link-grid { padding: 14px 32px 80px; max-width: 720px; margin: 0 auto; }
 }
 
-/* ========== 링크 카드 ========== */
+/* ========== 링크 카드 (목차형) ========== */
 .link-card {
-  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
+  padding: 10px 14px;
+  transition: transform 0.15s, border-color 0.2s;
   animation: cardIn 0.35s ease both;
 }
 .link-card:hover {
-  transform: translateY(-2px);
+  transform: translateX(2px);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 .card-thumb {
-  width: 100%;
-  aspect-ratio: 16 / 9;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: var(--radius-xs);
   background: var(--bg-surface);
   overflow: hidden;
   position: relative;
@@ -233,59 +236,51 @@ input, select, textarea, button {
   object-fit: cover;
   display: block;
 }
-.card-thumb .favicon-fallback {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
 .card-thumb .no-thumb {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 20px;
   color: var(--text-muted);
 }
 
 .card-body {
-  padding: 12px 14px 14px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
 }
 
 .card-domain {
   font-size: 11px;
   color: var(--text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 .card-domain img {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 2px;
 }
 
 .card-title {
   font-size: 14px;
   font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.35;
+  margin-bottom: 4px;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .tag {
   padding: 2px 8px;
@@ -310,10 +305,15 @@ input, select, textarea, button {
   opacity: 0;
   color: var(--danger);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   transition: opacity 0.2s;
 }
 .link-card:hover .card-delete { opacity: 1; }
+
+/* 모바일: 삭제 항상 보이기 */
+@media (max-width: 639px) {
+  .card-delete { opacity: 0.5; }
+}
 
 /* ========== 스켈레톤 ========== */
 .skeleton-card {

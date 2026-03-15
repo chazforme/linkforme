@@ -72,11 +72,10 @@ function renderLinks() {
       `<span class="tag" data-tag="${escHtml(t)}">#${escHtml(t)}</span>`
     ).join('');
 
-    const thumbHtml = link.thumbnail
-      ? `<img src="${escHtml(link.thumbnail)}" alt="" onerror="this.parentElement.innerHTML='<div class=\\'no-thumb\\'>🔗</div>'">`
-      : (link.favicon
-        ? `<img src="${escHtml(link.favicon)}" class="favicon-fallback" alt="" onerror="this.parentElement.innerHTML='<div class=\\'no-thumb\\'>🔗</div>'">`
-        : `<div class="no-thumb">🔗</div>`);
+    const thumbSrc = link.thumbnail || link.favicon || '';
+    const thumbHtml = thumbSrc
+      ? `<img src="${escHtml(thumbSrc)}" alt="" onerror="this.parentElement.innerHTML='<div class=\\'no-thumb\\'>🔗</div>'">`
+      : `<div class="no-thumb">🔗</div>`;
 
     card.innerHTML = `
       <div class="card-thumb">${thumbHtml}</div>
@@ -291,10 +290,23 @@ async function handleUrlInput() {
   $('#url-loading').style.display = 'none';
 }
 
-// 태그 입력
+// 태그 입력 (compositionend로 한글 중복 방지)
+let isComposing = false;
+$('#input-tag').addEventListener('compositionstart', () => { isComposing = true; });
+$('#input-tag').addEventListener('compositionend', (e) => {
+  isComposing = false;
+  // compositionend 후 Enter 처리
+  const tag = $('#input-tag').value.trim();
+  if (tag && !currentTags.includes(tag)) {
+    currentTags.push(tag);
+    renderModalTags();
+  }
+  $('#input-tag').value = '';
+});
 $('#input-tag').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
+    if (isComposing) return; // 한글 조합 중이면 무시
     const tag = $('#input-tag').value.trim();
     if (tag && !currentTags.includes(tag)) {
       currentTags.push(tag);
