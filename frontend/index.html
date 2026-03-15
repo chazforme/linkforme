@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>linksforme</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header class="header glass">
+    <h1 class="logo">linksforme</h1>
+    <div class="header-actions">
+      <button class="btn-icon" id="btn-search" aria-label="검색">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+      <button class="btn-add" id="btn-add">+</button>
+    </div>
+  </header>
+
+  <!-- 검색바 -->
+  <div class="search-bar" id="search-bar">
+    <input type="text" id="search-input" placeholder="제목, 태그, 메모로 검색..." autocomplete="off">
+  </div>
+
+  <!-- 카테고리 필터 -->
+  <nav class="category-bar" id="category-bar">
+    <button class="cat-chip active" data-category="all">전체</button>
+  </nav>
+
+  <!-- 활성 태그 필터 -->
+  <div class="active-tags" id="active-tags"></div>
+
+  <!-- 링크 그리드 -->
+  <main class="link-grid" id="link-grid">
+    <!-- 로딩 스켈레톤 -->
+    <div class="skeleton-card glass"></div>
+    <div class="skeleton-card glass"></div>
+    <div class="skeleton-card glass"></div>
+  </main>
+
+  <!-- 빈 상태 -->
+  <div class="empty-state" id="empty-state" style="display:none">
+    <div class="empty-icon">🔗</div>
+    <p>아직 저장한 링크가 없어요</p>
+    <p class="empty-sub">+ 버튼을 눌러 첫 링크를 추가해보세요</p>
+  </div>
+
+  <!-- 링크 추가 모달 -->
+  <div class="modal-overlay" id="modal-add" style="display:none">
+    <div class="modal glass">
+      <div class="modal-header">
+        <h2>링크 추가</h2>
+        <button class="btn-close" id="btn-close-add">&times;</button>
+      </div>
+
+      <!-- OG 미리보기 -->
+      <div class="og-preview" id="og-preview" style="display:none">
+        <img id="og-image" src="" alt="미리보기">
+        <div class="og-domain" id="og-domain"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="input-url">URL</label>
+        <input type="url" id="input-url" placeholder="링크를 붙여넣으세요" autocomplete="off">
+        <div class="url-loading" id="url-loading" style="display:none">
+          <div class="spinner"></div> OG 데이터 가져오는 중...
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="input-title">제목</label>
+        <input type="text" id="input-title" placeholder="제목을 입력하세요" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label for="select-category">카테고리</label>
+        <select id="select-category"></select>
+      </div>
+
+      <div class="form-group">
+        <label>태그</label>
+        <div class="tag-input-wrap">
+          <div class="tag-chips" id="tag-chips"></div>
+          <input type="text" id="input-tag" placeholder="태그 입력 후 Enter" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="input-memo">메모 (선택)</label>
+        <textarea id="input-memo" rows="2" placeholder="간단한 메모..."></textarea>
+      </div>
+
+      <button class="btn-submit" id="btn-submit">저장</button>
+    </div>
+  </div>
+
+  <!-- 카테고리 관리 모달 -->
+  <div class="modal-overlay" id="modal-category" style="display:none">
+    <div class="modal glass">
+      <div class="modal-header">
+        <h2>카테고리 관리</h2>
+        <button class="btn-close" id="btn-close-cat">&times;</button>
+      </div>
+      <div class="cat-list" id="cat-list"></div>
+      <div class="cat-add-row">
+        <input type="text" id="input-cat-emoji" placeholder="🏷️" maxlength="2" class="input-emoji">
+        <input type="text" id="input-cat-name" placeholder="카테고리 이름" autocomplete="off">
+        <button class="btn-small" id="btn-add-cat">추가</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 -->
+  <div class="toast" id="toast"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
