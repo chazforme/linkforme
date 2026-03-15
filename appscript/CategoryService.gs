@@ -36,6 +36,30 @@ function addCategory(name, emoji) {
 }
 
 /**
+ * 카테고리 순서 변경
+ * @param {string} orderedNames - 쉼표로 구분된 카테고리 이름 (새 순서)
+ */
+function reorderCategories(orderedNames) {
+  if (!orderedNames) return false;
+
+  var names = orderedNames.split(',');
+  var sheet = getOrCreateSheet(SHEET_CATEGORIES);
+  var data = sheet.getDataRange().getValues();
+  var header = data[0];
+  var orderCol = header.indexOf('order');
+  if (orderCol === -1) orderCol = 2; // fallback: 3번째 열
+
+  for (var i = 1; i < data.length; i++) {
+    var catName = data[i][0];
+    var newOrder = names.indexOf(catName);
+    if (newOrder !== -1) {
+      sheet.getRange(i + 1, orderCol + 1).setValue(newOrder + 1);
+    }
+  }
+  return true;
+}
+
+/**
  * 카테고리 삭제
  */
 function deleteCategory(name) {

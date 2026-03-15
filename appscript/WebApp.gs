@@ -29,6 +29,10 @@ function doGet(e) {
           var catDeleted = deleteCategory(params.name);
           return catDeleted ? buildSuccess({ deleted: true }) : buildError('카테고리를 찾을 수 없습니다');
 
+        case 'reorder_categories':
+          var reordered = reorderCategories(params.order);
+          return reordered ? buildSuccess({ reordered: true }) : buildError('순서 변경 실패');
+
         default:
           return buildError('알 수 없는 action: ' + params.action);
       }

@@ -387,12 +387,14 @@ function closeCategoryModal() {
 
 function renderCatList() {
   $('#cat-list').innerHTML = categories.map(c =>
-    `<div class="cat-item">
+    `<div class="cat-item" draggable="true" data-name="${escHtml(c.name)}">
+      <span class="cat-drag-handle">☰</span>
       <span class="cat-item-name">${c.emoji || '📌'} ${escHtml(c.name)}</span>
       <span class="cat-item-delete" data-name="${escHtml(c.name)}">삭제</span>
     </div>`
   ).join('');
 
+  // 삭제
   $('#cat-list').querySelectorAll('.cat-item-delete').forEach(el => {
     el.addEventListener('click', async () => {
       if (!confirm(`"${el.dataset.name}" 카테고리를 삭제할까요?`)) return;
@@ -407,6 +409,97 @@ function renderCatList() {
       }
     });
   });
+
+  // 드래그 앤 드롭 순서 변경
+  initCatDragSort();
+}
+
+// ========== 카테고리 드래그 정렬 ==========
+function initCatDragSort() {
+  const list = $('#cat-list');
+  let dragEl = null;
+  let touchStartY = 0;
+  let placeholder = null;
+
+  // --- Desktop drag ---
+  list.querySelectorAll('.cat-item').forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+      dragEl = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      dragEl = null;
+      saveCategoryOrder();
+    });
+
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (!dragEl || dragEl === item) return;
+      const rect = item.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (e.clientY < mid) {
+        list.insertBefore(dragEl, item);
+      } else {
+        list.insertBefore(dragEl, item.nextSibling);
+      }
+    });
+
+    // --- Touch drag ---
+    const handle = item.querySelector('.cat-drag-handle');
+    handle.addEventListener('touchstart', (e) => {
+      dragEl = item;
+      touchStartY = e.touches[0].clientY;
+      item.classList.add('dragging');
+    }, { passive: true });
+  });
+
+  document.addEventListener('touchmove', (e) => {
+    if (!dragEl) return;
+    const touch = e.touches[0];
+    const items = [...list.querySelectorAll('.cat-item:not(.dragging)')];
+    for (const item of items) {
+      const rect = item.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (touch.clientY < mid) {
+        list.insertBefore(dragEl, item);
+        return;
+      }
+    }
+    list.appendChild(dragEl);
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    if (!dragEl) return;
+    dragEl.classList.remove('dragging');
+    dragEl = null;
+    saveCategoryOrder();
+  });
+}
+
+async function saveCategoryOrder() {
+  const items = $('#cat-list').querySelectorAll('.cat-item');
+  const orderedNames = [...items].map(el => el.dataset.name);
+
+  // 로컬 상태 업데이트
+  const catMap = {};
+  categories.forEach(c => catMap[c.name] = c);
+  categories = orderedNames.map((name, i) => {
+    const c = catMap[name];
+    c.order = i + 1;
+    return c;
+  });
+  renderCategories();
+
+  // 서버 저장
+  try {
+    await api({ action: 'reorder_categories', order: orderedNames.join(',') });
+    showToast('순서 저장됨');
+  } catch (e) {
+    showToast('순서 저장 실패');
+  }
 }
 
 $('#btn-add-cat').addEventListener('click', async () => {
