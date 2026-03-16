@@ -290,23 +290,14 @@ async function handleUrlInput() {
   $('#url-loading').style.display = 'none';
 }
 
-// 태그 입력 (compositionend로 한글 중복 방지)
+// 태그 입력 (한글 IME 중복 방지)
 let isComposing = false;
 $('#input-tag').addEventListener('compositionstart', () => { isComposing = true; });
-$('#input-tag').addEventListener('compositionend', (e) => {
-  isComposing = false;
-  // compositionend 후 Enter 처리
-  const tag = $('#input-tag').value.trim();
-  if (tag && !currentTags.includes(tag)) {
-    currentTags.push(tag);
-    renderModalTags();
-  }
-  $('#input-tag').value = '';
-});
+$('#input-tag').addEventListener('compositionend', () => { isComposing = false; });
 $('#input-tag').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     e.preventDefault();
-    if (isComposing) return; // 한글 조합 중이면 무시
+    if (isComposing) return;
     const tag = $('#input-tag').value.trim();
     if (tag && !currentTags.includes(tag)) {
       currentTags.push(tag);
