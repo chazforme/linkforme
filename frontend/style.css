@@ -301,6 +301,18 @@ input, select, textarea, button {
   color: var(--text-muted);
 }
 
+.card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.card-edit {
+  opacity: 0;
+  cursor: pointer;
+  font-size: 12px;
+  transition: opacity 0.2s;
+}
 .card-delete {
   opacity: 0;
   color: var(--danger);
@@ -308,10 +320,12 @@ input, select, textarea, button {
   font-size: 12px;
   transition: opacity 0.2s;
 }
+.link-card:hover .card-edit,
 .link-card:hover .card-delete { opacity: 1; }
 
-/* 모바일: 삭제 항상 보이기 */
+/* 모바일: 항상 보이기 */
 @media (max-width: 639px) {
+  .card-edit { opacity: 0.5; }
   .card-delete { opacity: 0.5; }
 }
 

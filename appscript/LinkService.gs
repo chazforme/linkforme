@@ -155,6 +155,33 @@ function addLink(params) {
 }
 
 /**
+ * 링크 수정
+ */
+function editLink(params) {
+  var id = params.id;
+  if (!id) return false;
+
+  var sheet = getOrCreateSheet(SHEET_LINKS);
+  var data = sheet.getDataRange().getValues();
+  var header = data[0];
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === id) {
+      var row = i + 1;
+      // title (col 3), category (col 4), tags (col 5), memo (col 9)
+      if (params.title !== undefined) sheet.getRange(row, 3).setValue(params.title);
+      if (params.category !== undefined) sheet.getRange(row, 4).setValue(params.category);
+      if (params.tags !== undefined) sheet.getRange(row, 5).setValue(params.tags);
+      if (params.memo !== undefined) sheet.getRange(row, 9).setValue(params.memo);
+
+      var updated = sheetToObjects(sheet).filter(function(l) { return l.id === id; })[0];
+      return updated || true;
+    }
+  }
+  return false;
+}
+
+/**
  * 링크 삭제
  */
 function deleteLink(id) {

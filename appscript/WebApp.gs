@@ -13,6 +13,10 @@ function doGet(e) {
           var link = addLink(params);
           return buildSuccess(link);
 
+        case 'edit_link':
+          var edited = editLink(params);
+          return edited ? buildSuccess(edited) : buildError('링크를 찾을 수 없습니다');
+
         case 'delete_link':
           var deleted = deleteLink(params.id);
           return deleted ? buildSuccess({ deleted: true }) : buildError('링크를 찾을 수 없습니다');

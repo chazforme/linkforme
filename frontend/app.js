@@ -9,6 +9,7 @@ let activeCategory = 'all';
 let activeTags = [];
 let searchQuery = '';
 let currentTags = []; // 모달 내 태그 입력
+let editingLinkId = null; // 수정 모드일 때 링크 ID
 
 // ========== DOM ==========
 const $ = (sel) => document.querySelector(sel);
@@ -88,14 +89,17 @@ function renderLinks() {
         <div class="card-tags">${tagsHtml}</div>
         <div class="card-meta">
           <span>${escHtml(link.category || '')} · ${relativeTime(link.createdAt)}</span>
-          <span class="card-delete" data-id="${escHtml(link.id)}">삭제</span>
+          <span class="card-actions">
+            <span class="card-edit" data-id="${escHtml(link.id)}">✏️</span>
+            <span class="card-delete" data-id="${escHtml(link.id)}">삭제</span>
+          </span>
         </div>
       </div>
     `;
 
     // 카드 클릭 → 링크 열기
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.tag') || e.target.closest('.card-delete')) return;
+      if (e.target.closest('.tag') || e.target.closest('.card-delete') || e.target.closest('.card-edit')) return;
       window.open(link.url, '_blank');
     });
 
@@ -107,6 +111,14 @@ function renderLinks() {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleTagFilter(el.dataset.tag);
+    });
+  });
+
+  // 수정 클릭
+  elGrid.querySelectorAll('.card-edit').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handleEdit(el.dataset.id);
     });
   });
 
@@ -226,19 +238,56 @@ $('#modal-add').addEventListener('click', (e) => {
 });
 
 function openAddModal() {
+  editingLinkId = null;
   currentTags = [];
   $('#input-url').value = '';
   $('#input-title').value = '';
   $('#input-memo').value = '';
   $('#og-preview').style.display = 'none';
+  $('#input-url').disabled = false;
+  $('#modal-add .modal-header h2').textContent = '링크 추가';
+  $('#btn-submit').textContent = '저장';
   renderModalTags();
   updateCategorySelect();
   $('#modal-add').style.display = 'flex';
   $('#input-url').focus();
 }
 
+function openEditModal(link) {
+  editingLinkId = link.id;
+  currentTags = link.tags ? link.tags.split(',').filter(Boolean) : [];
+  $('#input-url').value = link.url;
+  $('#input-url').disabled = true;
+  $('#input-title').value = link.title || '';
+  $('#input-memo').value = link.memo || '';
+  $('#modal-add .modal-header h2').textContent = '링크 수정';
+  $('#btn-submit').textContent = '수정';
+  if (link.thumbnail) {
+    $('#og-image').src = link.thumbnail;
+    $('#og-domain').textContent = link.domain || '';
+    $('#og-preview').style.display = 'block';
+  } else {
+    $('#og-preview').style.display = 'none';
+  }
+  renderModalTags();
+  updateCategorySelect();
+  // 카테고리 선택
+  if (link.category) {
+    $('#select-category').value = link.category;
+  }
+  $('#modal-add').style.display = 'flex';
+  $('#input-title').focus();
+}
+
 function closeAddModal() {
+  editingLinkId = null;
   $('#modal-add').style.display = 'none';
+}
+
+function handleEdit(id) {
+  const link = allLinks.find(l => l.id === id);
+  if (!link) return;
+  openEditModal(link);
 }
 
 // URL 붙여넣기 → OG 데이터 fetch
@@ -335,28 +384,45 @@ async function handleSubmit() {
   }
 
   $('#btn-submit').disabled = true;
-  $('#btn-submit').textContent = '저장 중...';
+  $('#btn-submit').textContent = editingLinkId ? '수정 중...' : '저장 중...';
 
   try {
-    const link = await api({
-      action: 'add_link',
-      url: url,
-      title: title,
-      category: category,
-      tags: currentTags.join(','),
-      memo: memo
-    });
-
-    allLinks.unshift(link);
-    renderLinks();
-    closeAddModal();
-    showToast('링크가 저장되었습니다');
+    if (editingLinkId) {
+      const updated = await api({
+        action: 'edit_link',
+        id: editingLinkId,
+        title: title,
+        category: category,
+        tags: currentTags.join(','),
+        memo: memo
+      });
+      const idx = allLinks.findIndex(l => l.id === editingLinkId);
+      if (idx !== -1) {
+        allLinks[idx] = { ...allLinks[idx], title, category, tags: currentTags.join(','), memo };
+      }
+      renderLinks();
+      closeAddModal();
+      showToast('링크가 수정되었습니다');
+    } else {
+      const link = await api({
+        action: 'add_link',
+        url: url,
+        title: title,
+        category: category,
+        tags: currentTags.join(','),
+        memo: memo
+      });
+      allLinks.unshift(link);
+      renderLinks();
+      closeAddModal();
+      showToast('링크가 저장되었습니다');
+    }
   } catch (e) {
-    showToast('저장 실패: ' + e.message);
+    showToast((editingLinkId ? '수정' : '저장') + ' 실패: ' + e.message);
   }
 
   $('#btn-submit').disabled = false;
-  $('#btn-submit').textContent = '저장';
+  $('#btn-submit').textContent = editingLinkId ? '수정' : '저장';
 }
 
 // ========== 삭제 ==========
