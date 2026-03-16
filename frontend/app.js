@@ -90,7 +90,7 @@ function renderLinks() {
         <div class="card-meta">
           <span>${escHtml(link.category || '')} · ${relativeTime(link.createdAt)}</span>
           <span class="card-actions">
-            <span class="card-edit" data-id="${escHtml(link.id)}">✏️</span>
+            <span class="card-edit" data-id="${escHtml(link.id)}">수정</span>
             <span class="card-delete" data-id="${escHtml(link.id)}">삭제</span>
           </span>
         </div>
