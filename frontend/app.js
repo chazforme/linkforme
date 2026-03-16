@@ -33,17 +33,45 @@ async function api(params) {
   return data.data;
 }
 
+// ========== 캐시 ==========
+const CACHE_KEY = 'linkforme_cache';
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function saveCache(links, cats) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ links, categories: cats, ts: Date.now() }));
+  } catch {}
+}
+
 // ========== 초기화 ==========
 async function init() {
+  // 캐시 먼저 보여주기 (즉시 렌더링)
+  const cached = loadCache();
+  if (cached) {
+    allLinks = cached.links || [];
+    categories = cached.categories || [];
+    renderCategories();
+    renderLinks();
+  }
+
+  // 백그라운드에서 최신 데이터 가져오기
   try {
     const data = await api({ type: 'all' });
     allLinks = data.links || [];
     categories = data.categories || [];
+    saveCache(allLinks, categories);
     renderCategories();
     renderLinks();
   } catch (e) {
     console.error('초기 로드 실패:', e);
-    showToast('데이터 로드 실패 😢');
+    if (!cached) showToast('데이터 로드 실패');
   }
 }
 
@@ -400,6 +428,7 @@ async function handleSubmit() {
       if (idx !== -1) {
         allLinks[idx] = { ...allLinks[idx], title, category, tags: currentTags.join(','), memo };
       }
+      saveCache(allLinks, categories);
       renderLinks();
       closeAddModal();
       showToast('링크가 수정되었습니다');
@@ -413,6 +442,7 @@ async function handleSubmit() {
         memo: memo
       });
       allLinks.unshift(link);
+      saveCache(allLinks, categories);
       renderLinks();
       closeAddModal();
       showToast('링크가 저장되었습니다');
@@ -432,6 +462,7 @@ async function handleDelete(id) {
   try {
     await api({ action: 'delete_link', id: id });
     allLinks = allLinks.filter(l => l.id !== id);
+    saveCache(allLinks, categories);
     renderLinks();
     showToast('삭제되었습니다');
   } catch (e) {
